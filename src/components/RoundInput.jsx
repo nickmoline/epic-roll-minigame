@@ -60,11 +60,13 @@ export default function RoundInput({
   tieEvents,
   remainingTieEvent,
   onResolve,
+  onRoll3D,
 }) {
   const [rollGood, setRollGood] = useState('');
   const [rollBad, setRollBad] = useState('');
   const [mulliganGood, setMulliganGood] = useState(null);
   const [mulliganBad, setMulliganBad] = useState(null);
+  const [isRolling, setIsRolling] = useState(false);
 
   const activeEvents = roundEvents.filter((e) => e.round === round);
 
@@ -139,14 +141,30 @@ export default function RoundInput({
         </div>
         <button
           type="button"
-          className="px-3 py-2 text-xs font-bold rounded border border-gold/40 text-gold hover:bg-gold/10 transition-colors whitespace-nowrap"
-          onClick={() => {
+          className="px-3 py-2 text-xs font-bold rounded border border-gold/40 text-gold hover:bg-gold/10 transition-colors whitespace-nowrap disabled:opacity-40"
+          disabled={isRolling}
+          onClick={async () => {
+            if (onRoll3D) {
+              setIsRolling(true);
+              try {
+                const result = await onRoll3D(effectiveGoodDie, effectiveBadDie);
+                if (result) {
+                  setRollGood(String(result.rollGood));
+                  setRollBad(String(result.rollBad));
+                  return;
+                }
+              } catch (err) {
+                console.error('3D roll failed, using fallback:', err);
+              } finally {
+                setIsRolling(false);
+              }
+            }
             setRollGood(String(Math.floor(Math.random() * effectiveGoodDie) + 1));
             setRollBad(String(Math.floor(Math.random() * effectiveBadDie) + 1));
           }}
           title="Roll both dice"
         >
-          Roll
+          {isRolling ? '...' : 'Roll'}
         </button>
         <div>
           <label className="block text-xs text-text-dim uppercase tracking-wider mb-1">

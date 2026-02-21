@@ -9,6 +9,8 @@ lerna-debug.log*
 
 node_modules
 dist
+public/assets/ammo
+public/assets/themes
 dist-ssr
 *.local
 

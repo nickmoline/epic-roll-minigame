@@ -1,13 +1,34 @@
+import { useState, useCallback } from 'react';
 import HPDisplay from './HPDisplay';
 import MulliganTracker from './MulliganTracker';
 import DieDisplay from './DieDisplay';
 import RoundInput from './RoundInput';
 import CombatLog from './CombatLog';
+import { useDiceBox } from '../hooks/useDiceBox';
 
 export default function CombatScreen({ state, onResolve, onUndo, onNewCombat }) {
   const { config, combat } = state;
   const goodName = config.goodGuys.name;
   const badName = config.badGuys.name;
+  const [trayOpen, setTrayOpen] = useState(false);
+  const diceBox = useDiceBox();
+
+  const rollDice = useCallback(async (goodDie, badDie) => {
+    if (!trayOpen) {
+      setTrayOpen(true);
+      // Wait for CSS height transition (300ms) so container has dimensions
+      await new Promise((r) => setTimeout(r, 350));
+    }
+
+    if (!diceBox.ready) {
+      await diceBox.init();
+      // Small extra delay after first init for canvas to settle
+      await new Promise((r) => setTimeout(r, 100));
+    }
+
+    const result = await diceBox.roll(goodDie, badDie);
+    return result;
+  }, [trayOpen, diceBox]);
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-6 space-y-5">
@@ -82,7 +103,34 @@ export default function CombatScreen({ state, onResolve, onUndo, onNewCombat }) 
           tieEvents={config.tieEvents}
           remainingTieEvent={config.remainingTieEvent}
           onResolve={onResolve}
+          onRoll3D={rollDice}
         />
+      </div>
+
+      <div className="dice-tray-frame">
+        <button
+          className="w-full text-left font-cinzel text-sm font-bold text-gold flex items-center justify-between px-2 py-1"
+          onClick={() => setTrayOpen(!trayOpen)}
+        >
+          <span>Dice Tray</span>
+          <span className="text-text-dim text-sm">{trayOpen ? '▲ Hide' : '▼ Show'}</span>
+        </button>
+        <div
+          className="dice-tray-felt"
+          style={{
+            height: trayOpen ? '280px' : '0px',
+            transition: 'height 0.3s ease',
+          }}
+        >
+          <div
+            id="dice-tray"
+            style={{
+              width: '100%',
+              height: '100%',
+              position: 'relative',
+            }}
+          />
+        </div>
       </div>
 
       <CombatLog log={combat.log} goodName={goodName} badName={badName} goodMulligans={config.goodGuys.mulligans} badMulligans={config.badGuys.mulligans} />

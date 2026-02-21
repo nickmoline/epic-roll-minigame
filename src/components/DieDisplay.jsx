@@ -56,12 +56,18 @@ const DIE_CONFIGS = {
   },
 };
 
-export function DieShape({ sides, value, decreased, className = 'w-16 h-16' }) {
+const TEAM_COLORS = {
+  good: { fill: 'rgba(21,128,61,0.45)', stroke: '#15803d', detail: 'rgba(21,128,61,0.25)', text: '#bbf7d0' },
+  bad:  { fill: 'rgba(220,38,38,0.45)', stroke: '#dc2626', detail: 'rgba(220,38,38,0.25)', text: '#fecaca' },
+};
+
+export function DieShape({ sides, value, decreased, team, className = 'w-16 h-16' }) {
   const config = DIE_CONFIGS[sides] || DIE_CONFIGS[12];
-  const stroke = decreased ? '#ca8a04' : '#a8a29e';
-  const fill = decreased ? 'rgba(113,63,18,0.4)' : 'rgba(68,64,60,0.3)';
-  const detailStroke = decreased ? 'rgba(202,138,4,0.3)' : 'rgba(168,162,158,0.2)';
-  const textFill = decreased ? '#facc15' : '#e7e5e4';
+  const tc = !decreased && team ? TEAM_COLORS[team] : null;
+  const stroke = decreased ? '#ca8a04' : tc ? tc.stroke : '#a8a29e';
+  const fill = decreased ? 'rgba(113,63,18,0.4)' : tc ? tc.fill : 'rgba(68,64,60,0.3)';
+  const detailStroke = decreased ? 'rgba(202,138,4,0.3)' : tc ? tc.detail : 'rgba(168,162,158,0.2)';
+  const textFill = decreased ? '#facc15' : tc ? tc.text : '#e7e5e4';
   const display = value !== undefined ? value : sides;
 
   return (
@@ -106,7 +112,7 @@ export default function DieDisplay({ goodDie, badDie, goodBaseDie, badBaseDie, g
   return (
     <div className="flex gap-4 sm:gap-8">
       <div className="flex-1 flex items-center justify-center gap-3 parchment-panel p-3">
-        <DieShape sides={goodDie} decreased={goodDecreased} />
+        <DieShape sides={goodDie} decreased={goodDecreased} team="good" />
         <div className="text-left">
           <div className="text-xs text-text-dim uppercase tracking-wider">{goodName}</div>
           <div className="font-cinzel font-bold text-sm">{dieLabel(goodDie)}</div>
@@ -116,7 +122,7 @@ export default function DieDisplay({ goodDie, badDie, goodBaseDie, badBaseDie, g
         </div>
       </div>
       <div className="flex-1 flex items-center justify-center gap-3 parchment-panel p-3">
-        <DieShape sides={badDie} decreased={badDecreased} />
+        <DieShape sides={badDie} decreased={badDecreased} team="bad" />
         <div className="text-left">
           <div className="text-xs text-text-dim uppercase tracking-wider">{badName}</div>
           <div className="font-cinzel font-bold text-sm">{dieLabel(badDie)}</div>
