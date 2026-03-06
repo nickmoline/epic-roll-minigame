@@ -9,8 +9,7 @@ export default defineConfig({
   host: process.env.VITE_HOST,
   plugins: [react(), tailwindcss()],
   server: {
-    port: 5175,
-    host: '0.0.0.0',
+    port: process.env.VITE_PORT || 5175,
     allowedHosts: [
       process.env.VITE_HOST
     ]
