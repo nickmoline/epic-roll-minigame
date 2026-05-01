@@ -17,6 +17,20 @@ function DieSwapInline({ value, onChange }) {
   );
 }
 
+function AdvInline({ value, onChange }) {
+  return (
+    <select
+      className="input-field text-sm text-center"
+      value={value || 'normal'}
+      onChange={(e) => onChange(e.target.value)}
+    >
+      <option value="normal">--</option>
+      <option value="adv">Adv</option>
+      <option value="dis">Dis</option>
+    </select>
+  );
+}
+
 function MulliganRow({ mulligan, onChange, onRemove, goodLabel, badLabel }) {
   return (
     <div className="p-2 bg-bg-dark/50 rounded space-y-2">
@@ -61,6 +75,10 @@ function MulliganRow({ mulligan, onChange, onRemove, goodLabel, badLabel }) {
         <span className="text-text-dim">HP Mod</span>
         <input className="input-field text-sm text-center" type="number" value={mulligan.hpModGood || 0} onChange={(e) => onChange({ ...mulligan, hpModGood: Number(e.target.value) || 0 })} />
         <input className="input-field text-sm text-center" type="number" value={mulligan.hpModBad || 0} onChange={(e) => onChange({ ...mulligan, hpModBad: Number(e.target.value) || 0 })} />
+
+        <span className="text-text-dim">Advantage</span>
+        <AdvInline value={mulligan.advGood} onChange={(v) => onChange({ ...mulligan, advGood: v })} />
+        <AdvInline value={mulligan.advBad} onChange={(v) => onChange({ ...mulligan, advBad: v })} />
       </div>
     </div>
   );
@@ -104,7 +122,7 @@ function GroupConfig({ group, onChange, label, accentClass, goodLabel, badLabel 
               className="text-xs text-gold hover:text-gold-bright transition-colors"
               onClick={() => onChange({
                 ...group,
-                mulligans: [...group.mulligans, { name: '', noDamage: false, hpModGood: 0, hpModBad: 0, rollBonusGood: 0, rollBonusBad: 0, swapDieGood: 0, swapDieBad: 0 }],
+                mulligans: [...group.mulligans, { name: '', noDamage: false, hpModGood: 0, hpModBad: 0, rollBonusGood: 0, rollBonusBad: 0, swapDieGood: 0, swapDieBad: 0, advGood: 'normal', advBad: 'normal' }],
               })}
             >
               + Add
@@ -204,7 +222,7 @@ function RoundEventRow({ event, onChange, onRemove }) {
           onChange={(e) => onChange({ ...event, round: Math.max(1, Number(e.target.value) || 1) })}
         />
       </div>
-      <div className="flex flex-col gap-1 flex-1">
+      <div className="flex flex-col gap-1 flex-1 min-w-[200px]">
         <label className="text-xs text-text-dim uppercase tracking-wide">Description</label>
         <input
           className="input-field"
@@ -214,23 +232,31 @@ function RoundEventRow({ event, onChange, onRemove }) {
           placeholder="What happens..."
         />
       </div>
-      <div className="flex flex-col gap-1">
+      <div className="flex flex-col gap-1 w-16">
         <label className="text-xs text-text-dim uppercase tracking-wide">Ally HP</label>
         <input
-          className="input-field w-20"
+          className="input-field w-full"
           type="number"
           value={event.hpModGood}
           onChange={(e) => onChange({ ...event, hpModGood: Number(e.target.value) || 0 })}
         />
       </div>
-      <div className="flex flex-col gap-1">
+      <div className="flex flex-col gap-1 w-16">
         <label className="text-xs text-text-dim uppercase tracking-wide">Enemy HP</label>
         <input
-          className="input-field w-20"
+          className="input-field w-full"
           type="number"
           value={event.hpModBad}
           onChange={(e) => onChange({ ...event, hpModBad: Number(e.target.value) || 0 })}
         />
+      </div>
+      <div className="flex flex-col gap-1 w-16">
+        <label className="text-xs text-text-dim uppercase tracking-wide">Ally Adv</label>
+        <AdvInline value={event.advGood} onChange={(v) => onChange({ ...event, advGood: v })} />
+      </div>
+      <div className="flex flex-col gap-1 w-16">
+        <label className="text-xs text-text-dim uppercase tracking-wide">Enemy Adv</label>
+        <AdvInline value={event.advBad} onChange={(v) => onChange({ ...event, advBad: v })} />
       </div>
       <button
         onClick={onRemove}
@@ -442,7 +468,7 @@ export default function SetupScreen({ config, onUpdateConfig, onStart, onReset, 
                   className="text-xs btn-gold !py-1 !px-3"
                   onClick={() => onUpdateConfig({
                     ...config,
-                    roundEvents: [...config.roundEvents, { round: 1, description: '', hpModGood: 0, hpModBad: 0 }],
+                    roundEvents: [...config.roundEvents, { round: 1, description: '', hpModGood: 0, hpModBad: 0, advGood: 'normal', advBad: 'normal' }],
                   })}
                 >
                   + Add

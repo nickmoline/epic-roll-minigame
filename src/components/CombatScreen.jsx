@@ -13,7 +13,7 @@ export default function CombatScreen({ state, onResolve, onUndo, onNewCombat }) 
   const [trayOpen, setTrayOpen] = useState(false);
   const diceBox = useDiceBox();
 
-  const rollDice = useCallback(async (goodDie, badDie) => {
+  const rollDice = useCallback(async (goodDie, badDie, goodAdv = 'normal', badAdv = 'normal') => {
     if (!trayOpen) {
       setTrayOpen(true);
       // Wait for CSS height transition (300ms) so container has dimensions
@@ -26,7 +26,7 @@ export default function CombatScreen({ state, onResolve, onUndo, onNewCombat }) 
       await new Promise((r) => setTimeout(r, 100));
     }
 
-    const result = await diceBox.roll(goodDie, badDie);
+    const result = await diceBox.roll(goodDie, badDie, goodAdv, badAdv);
     return result;
   }, [trayOpen, diceBox]);
 

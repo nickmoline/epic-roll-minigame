@@ -39,6 +39,8 @@ function initCombat(config) {
       notes: '',
       mulliganGood: null,
       mulliganBad: null,
+      advGood: 'normal',
+      advBad: 'normal',
       wasTie: false,
     }],
   };
@@ -70,7 +72,7 @@ export function combatReducer(state, action) {
     }
 
     case 'RESOLVE_ROUND': {
-      const { rollGood, rollBad, mulliganGood, mulliganBad } = action.payload;
+      const { rollGood, rollBad, mulliganGood, mulliganBad, advGood, advBad } = action.payload;
       const { config, combat } = state;
 
       const goodMull = mulliganGood !== null ? config.goodGuys.mulligans[mulliganGood] : null;
@@ -181,6 +183,8 @@ export function combatReducer(state, action) {
         notes: autoNotes.join(' | '),
         mulliganGood,
         mulliganBad,
+        advGood,
+        advBad,
         wasTie: isTie,
       };
 

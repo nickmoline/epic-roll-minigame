@@ -8,6 +8,16 @@ function MulliganBadge({ name }) {
   );
 }
 
+function AdvBadge({ adv }) {
+  if (adv === 'adv') {
+    return <span className="inline-block ml-1 text-green-400 text-xs font-bold" title="Advantage">↑</span>;
+  }
+  if (adv === 'dis') {
+    return <span className="inline-block ml-1 text-red-400 text-xs font-bold" title="Disadvantage">↓</span>;
+  }
+  return null;
+}
+
 function rollCellClass(rollGood, rollBad, side) {
   if (rollGood === null || rollBad === null) return '';
   if (rollGood === rollBad) return 'text-yellow-400';
@@ -64,12 +74,14 @@ export default function CombatLog({ log, goodName, badName, goodMulligans = [], 
                   </td>
                   <td className={`px-3 py-2 text-center font-bold tabular-nums ${rollCellClass(entry.rollGood, entry.rollBad, 'good')}`}>
                     {entry.rollGood ?? '—'}
+                    <AdvBadge adv={entry.advGood} />
                     {entry.mulliganGood !== null && entry.mulliganGood !== false && (
                       <MulliganBadge name={goodMulligans[entry.mulliganGood]?.name} />
                     )}
                   </td>
                   <td className={`px-3 py-2 text-center font-bold tabular-nums ${rollCellClass(entry.rollGood, entry.rollBad, 'bad')}`}>
                     {entry.rollBad ?? '—'}
+                    <AdvBadge adv={entry.advBad} />
                     {entry.mulliganBad !== null && entry.mulliganBad !== false && (
                       <MulliganBadge name={badMulligans[entry.mulliganBad]?.name} />
                     )}

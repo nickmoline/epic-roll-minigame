@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { isValidRoll, dieLabel } from '../diceUtils';
 
 function mulliganEffectSummary(m) {
@@ -10,6 +10,8 @@ function mulliganEffectSummary(m) {
   if (m.rollBonusBad) parts.push(`Enemies roll ${m.rollBonusBad > 0 ? '+' : ''}${m.rollBonusBad}`);
   if (m.swapDieGood) parts.push(`Allies use D${m.swapDieGood}`);
   if (m.swapDieBad) parts.push(`Enemies use D${m.swapDieBad}`);
+  if (m.advGood && m.advGood !== 'normal') parts.push(`Allies ${m.advGood === 'adv' ? 'Advantage' : 'Disadvantage'}`);
+  if (m.advBad && m.advBad !== 'normal') parts.push(`Enemies ${m.advBad === 'adv' ? 'Advantage' : 'Disadvantage'}`);
   return parts.join(', ');
 }
 
@@ -44,6 +46,33 @@ function MulliganSelect({ mulligans, usedIndices, value, onChange, groupName }) 
     </div>
   );
 }
+function AdvToggle({ value, onChange }) {
+  return (
+    <div className="flex gap-1 mt-2 justify-center bg-black/20 p-1 rounded">
+      <button 
+        type="button" 
+        onClick={() => onChange('dis')}
+        className={`flex-1 px-1 py-1 text-[10px] font-bold rounded transition-colors ${value === 'dis' ? 'bg-red-900/80 text-red-200 shadow-inner' : 'text-text-dim hover:text-text hover:bg-white/5'}`}
+      >
+        DIS
+      </button>
+      <button 
+        type="button" 
+        onClick={() => onChange('normal')}
+        className={`flex-1 px-1 py-1 text-[10px] font-bold rounded transition-colors ${value === 'normal' ? 'bg-gray-700 text-gray-200 shadow-inner' : 'text-text-dim hover:text-text hover:bg-white/5'}`}
+      >
+        NORM
+      </button>
+      <button 
+        type="button" 
+        onClick={() => onChange('adv')}
+        className={`flex-1 px-1 py-1 text-[10px] font-bold rounded transition-colors ${value === 'adv' ? 'bg-green-900/80 text-green-200 shadow-inner' : 'text-text-dim hover:text-text hover:bg-white/5'}`}
+      >
+        ADV
+      </button>
+    </div>
+  );
+}
 
 export default function RoundInput({
   round,
@@ -64,11 +93,33 @@ export default function RoundInput({
 }) {
   const [rollGood, setRollGood] = useState('');
   const [rollBad, setRollBad] = useState('');
+  const [goodAdvState, setGoodAdvState] = useState('normal');
+  const [badAdvState, setBadAdvState] = useState('normal');
   const [mulliganGood, setMulliganGood] = useState(null);
   const [mulliganBad, setMulliganBad] = useState(null);
   const [isRolling, setIsRolling] = useState(false);
 
   const activeEvents = roundEvents.filter((e) => e.round === round);
+
+  const eventGoodAdv = activeEvents.reduce((acc, e) => (e.advGood && e.advGood !== 'normal' ? e.advGood : acc), 'normal');
+  const eventBadAdv = activeEvents.reduce((acc, e) => (e.advBad && e.advBad !== 'normal' ? e.advBad : acc), 'normal');
+
+  const goodMull = mulliganGood !== null ? goodMulligans[mulliganGood] : null;
+  const badMull = mulliganBad !== null ? badMulligans[mulliganBad] : null;
+
+  const mullGoodAdv = goodMull?.advGood && goodMull.advGood !== 'normal' ? goodMull.advGood : (badMull?.advGood && badMull.advGood !== 'normal' ? badMull.advGood : 'normal');
+  const mullBadAdv = goodMull?.advBad && goodMull.advBad !== 'normal' ? goodMull.advBad : (badMull?.advBad && badMull.advBad !== 'normal' ? badMull.advBad : 'normal');
+
+  const computedGoodAdv = mullGoodAdv !== 'normal' ? mullGoodAdv : eventGoodAdv;
+  const computedBadAdv = mullBadAdv !== 'normal' ? mullBadAdv : eventBadAdv;
+
+  useEffect(() => {
+    setGoodAdvState(computedGoodAdv);
+  }, [computedGoodAdv, round]);
+
+  useEffect(() => {
+    setBadAdvState(computedBadAdv);
+  }, [computedBadAdv, round]);
 
   let nextTieEvent = null;
   if (tieCount < tieEvents.length) {
@@ -78,8 +129,6 @@ export default function RoundInput({
   }
 
   // Compute effective dice accounting for die-swap mulligans
-  const goodMull = mulliganGood !== null ? goodMulligans[mulliganGood] : null;
-  const badMull = mulliganBad !== null ? badMulligans[mulliganBad] : null;
   const effectiveGoodDie = goodMull?.swapDieGood || badMull?.swapDieGood || goodDie;
   const effectiveBadDie = goodMull?.swapDieBad || badMull?.swapDieBad || badDie;
 
@@ -95,6 +144,8 @@ export default function RoundInput({
       rollBad: Number(rollBad),
       mulliganGood,
       mulliganBad,
+      advGood: goodAdvState,
+      advBad: badAdvState,
     });
     setRollGood('');
     setRollBad('');
@@ -138,6 +189,7 @@ export default function RoundInput({
             }}
             placeholder={`1-${effectiveGoodDie}`}
           />
+          <AdvToggle value={goodAdvState} onChange={setGoodAdvState} />
         </div>
         <button
           type="button"
@@ -147,7 +199,7 @@ export default function RoundInput({
             if (onRoll3D) {
               setIsRolling(true);
               try {
-                const result = await onRoll3D(effectiveGoodDie, effectiveBadDie);
+                const result = await onRoll3D(effectiveGoodDie, effectiveBadDie, goodAdvState, badAdvState);
                 if (result) {
                   setRollGood(String(result.rollGood));
                   setRollBad(String(result.rollBad));
@@ -159,8 +211,16 @@ export default function RoundInput({
                 setIsRolling(false);
               }
             }
-            setRollGood(String(Math.floor(Math.random() * effectiveGoodDie) + 1));
-            setRollBad(String(Math.floor(Math.random() * effectiveBadDie) + 1));
+
+            const rollDie = (sides, adv) => {
+              const r1 = Math.floor(Math.random() * sides) + 1;
+              if (adv === 'normal') return r1;
+              const r2 = Math.floor(Math.random() * sides) + 1;
+              return adv === 'adv' ? Math.max(r1, r2) : Math.min(r1, r2);
+            };
+
+            setRollGood(String(rollDie(effectiveGoodDie, goodAdvState)));
+            setRollBad(String(rollDie(effectiveBadDie, badAdvState)));
           }}
           title="Roll both dice"
         >
@@ -185,6 +245,7 @@ export default function RoundInput({
             }}
             placeholder={`1-${effectiveBadDie}`}
           />
+          <AdvToggle value={badAdvState} onChange={setBadAdvState} />
         </div>
       </div>
 

@@ -45,7 +45,7 @@ export function useDiceBox() {
     return initPromise.current;
   }, []);
 
-  const roll = useCallback(async (goodDie, badDie) => {
+  const roll = useCallback(async (goodDie, badDie, goodAdv = 'normal', badAdv = 'normal') => {
     let box = boxRef.current;
     if (!box) {
       box = await init();
@@ -53,9 +53,12 @@ export function useDiceBox() {
     }
 
     try {
+      const goodQty = goodAdv === 'normal' ? 1 : 2;
+      const badQty = badAdv === 'normal' ? 1 : 2;
+
       const results = await box.roll([
-        { qty: 1, sides: goodDie, themeColor: ALLY_COLOR },
-        { qty: 1, sides: badDie, themeColor: ENEMY_COLOR },
+        { qty: goodQty, sides: goodDie, themeColor: ALLY_COLOR },
+        { qty: badQty, sides: badDie, themeColor: ENEMY_COLOR },
       ]);
 
       if (!results || results.length < 2) {
@@ -63,12 +66,19 @@ export function useDiceBox() {
         return null;
       }
 
-      const goodResult = results.find((r) => r.groupId === 0);
-      const badResult = results.find((r) => r.groupId === 1);
+      const goodDice = results.filter((r) => r.groupId === 0);
+      const badDice = results.filter((r) => r.groupId === 1);
+
+      const getFinalValue = (diceArray, advState) => {
+        if (!diceArray || diceArray.length === 0) return 0;
+        if (advState === 'normal') return diceArray[0].value;
+        const values = diceArray.map(d => d.value);
+        return advState === 'adv' ? Math.max(...values) : Math.min(...values);
+      };
 
       return {
-        rollGood: goodResult?.value ?? results[0].value,
-        rollBad: badResult?.value ?? results[1].value,
+        rollGood: goodDice.length > 0 ? getFinalValue(goodDice, goodAdv) : results[0].value,
+        rollBad: badDice.length > 0 ? getFinalValue(badDice, badAdv) : results[1].value,
       };
     } catch (err) {
       console.error('Dice roll failed:', err);
