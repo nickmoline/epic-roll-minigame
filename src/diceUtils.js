@@ -35,3 +35,10 @@ export function getSmallerDie(currentDie) {
 export function shouldDecreaseDie(hp, threshold) {
   return hp <= threshold && hp > 0;
 }
+
+export function rollCellClass(rollGood, rollBad, side) {
+  if (rollGood === null || rollBad === null) return '';
+  if (rollGood === rollBad) return 'text-yellow-400';
+  if (side === 'good') return rollGood > rollBad ? 'text-good-bright' : 'text-bad-bright';
+  return rollBad > rollGood ? 'text-good-bright' : 'text-bad-bright';
+}

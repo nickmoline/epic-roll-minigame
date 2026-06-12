@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import DiceSelector from './DiceSelector';
-import { dieLabel } from '../diceUtils';
 
 function DieSwapInline({ value, onChange }) {
   return (

@@ -72,7 +72,7 @@ export function combatReducer(state, action) {
     }
 
     case 'RESOLVE_ROUND': {
-      const { rollGood, rollBad, mulliganGood, mulliganBad, advGood, advBad } = action.payload;
+      const { rollGood, rollBad, mulliganGood, mulliganBad, advGood, advBad, manualModGood, manualModBad } = action.payload;
       const { config, combat } = state;
 
       const goodMull = mulliganGood !== null ? config.goodGuys.mulligans[mulliganGood] : null;
@@ -108,10 +108,17 @@ export function combatReducer(state, action) {
         hpChangeBad += (badMull.hpModBad || 0);
       }
 
-      let extraModGood = 0;
-      let extraModBad = 0;
+      let extraModGood = manualModGood || 0;
+      let extraModBad = manualModBad || 0;
       let newTieCount = combat.tieCount;
       const autoNotes = [];
+
+      if (manualModGood) {
+        autoNotes.push(`${config.goodGuys.name} mod: ${manualModGood > 0 ? '+' : ''}${manualModGood}`);
+      }
+      if (manualModBad) {
+        autoNotes.push(`${config.badGuys.name} mod: ${manualModBad > 0 ? '+' : ''}${manualModBad}`);
+      }
 
       const diff = effectiveRollGood - effectiveRollBad;
       if (diff > 0) {

@@ -1,6 +1,6 @@
-import { useRef, useEffect } from 'react';
+import { rollCellClass } from '../diceUtils';
 
-function MulliganBadge({ name }) {
+export function MulliganBadge({ name }) {
   return (
     <span className="inline-block ml-1 text-gold text-xs align-super" title={name || 'Mulligan used'}>
       ★
@@ -8,7 +8,7 @@ function MulliganBadge({ name }) {
   );
 }
 
-function AdvBadge({ adv }) {
+export function AdvBadge({ adv }) {
   if (adv === 'adv') {
     return <span className="inline-block ml-1 text-green-400 text-xs font-bold" title="Advantage">↑</span>;
   }
@@ -18,20 +18,7 @@ function AdvBadge({ adv }) {
   return null;
 }
 
-function rollCellClass(rollGood, rollBad, side) {
-  if (rollGood === null || rollBad === null) return '';
-  if (rollGood === rollBad) return 'text-yellow-400';
-  if (side === 'good') return rollGood > rollBad ? 'text-good-bright' : 'text-bad-bright';
-  return rollBad > rollGood ? 'text-good-bright' : 'text-bad-bright';
-}
-
 export default function CombatLog({ log, goodName, badName, goodMulligans = [], badMulligans = [] }) {
-  const endRef = useRef(null);
-
-  useEffect(() => {
-    endRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [log.length]);
-
   if (log.length <= 1) return null;
 
   return (
@@ -100,7 +87,6 @@ export default function CombatLog({ log, goodName, badName, goodMulligans = [], 
             })}
           </tbody>
         </table>
-        <div ref={endRef} />
       </div>
     </div>
   );

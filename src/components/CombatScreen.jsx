@@ -4,6 +4,7 @@ import MulliganTracker from './MulliganTracker';
 import DieDisplay from './DieDisplay';
 import RoundInput from './RoundInput';
 import CombatLog from './CombatLog';
+import PreviousRoundSummary from './PreviousRoundSummary';
 import { useDiceBox } from '../hooks/useDiceBox';
 
 export default function CombatScreen({ state, onResolve, onUndo, onNewCombat }) {
@@ -86,6 +87,14 @@ export default function CombatScreen({ state, onResolve, onUndo, onNewCombat }) 
             badBaseDie={config.badGuys.baseDie}
             goodName={goodName}
             badName={badName}
+          />
+          <PreviousRoundSummary
+            entry={combat.log[combat.log.length - 1]}
+            prevEntry={combat.log[combat.log.length - 2]}
+            goodName={goodName}
+            badName={badName}
+            goodMulligans={config.goodGuys.mulligans}
+            badMulligans={config.badGuys.mulligans}
           />
         </div>
         <RoundInput

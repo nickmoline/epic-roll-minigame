@@ -49,22 +49,22 @@ function MulliganSelect({ mulligans, usedIndices, value, onChange, groupName }) 
 function AdvToggle({ value, onChange }) {
   return (
     <div className="flex gap-1 mt-2 justify-center bg-black/20 p-1 rounded">
-      <button 
-        type="button" 
+      <button
+        type="button"
         onClick={() => onChange('dis')}
         className={`flex-1 px-1 py-1 text-[10px] font-bold rounded transition-colors ${value === 'dis' ? 'bg-red-900/80 text-red-200 shadow-inner' : 'text-text-dim hover:text-text hover:bg-white/5'}`}
       >
         DIS
       </button>
-      <button 
-        type="button" 
+      <button
+        type="button"
         onClick={() => onChange('normal')}
         className={`flex-1 px-1 py-1 text-[10px] font-bold rounded transition-colors ${value === 'normal' ? 'bg-gray-700 text-gray-200 shadow-inner' : 'text-text-dim hover:text-text hover:bg-white/5'}`}
       >
         NORM
       </button>
-      <button 
-        type="button" 
+      <button
+        type="button"
         onClick={() => onChange('adv')}
         className={`flex-1 px-1 py-1 text-[10px] font-bold rounded transition-colors ${value === 'adv' ? 'bg-green-900/80 text-green-200 shadow-inner' : 'text-text-dim hover:text-text hover:bg-white/5'}`}
       >
@@ -97,6 +97,8 @@ export default function RoundInput({
   const [badAdvState, setBadAdvState] = useState('normal');
   const [mulliganGood, setMulliganGood] = useState(null);
   const [mulliganBad, setMulliganBad] = useState(null);
+  const [manualModGood, setManualModGood] = useState('');
+  const [manualModBad, setManualModBad] = useState('');
   const [isRolling, setIsRolling] = useState(false);
 
   const activeEvents = roundEvents.filter((e) => e.round === round);
@@ -146,11 +148,15 @@ export default function RoundInput({
       mulliganBad,
       advGood: goodAdvState,
       advBad: badAdvState,
+      manualModGood: manualModGood !== '' ? Number(manualModGood) : 0,
+      manualModBad: manualModBad !== '' ? Number(manualModBad) : 0,
     });
     setRollGood('');
     setRollBad('');
     setMulliganGood(null);
     setMulliganBad(null);
+    setManualModGood('');
+    setManualModBad('');
   }
 
   return (
@@ -264,6 +270,33 @@ export default function RoundInput({
           onChange={setMulliganBad}
           groupName={badName}
         />
+      </div>
+
+      <div className="grid grid-cols-2 gap-4 mb-4">
+        <div>
+          <label className="block text-xs text-text-dim uppercase tracking-wider mb-1">
+            Extra HP Mod (+/-)
+          </label>
+          <input
+            type="number"
+            className="input-field w-full text-center"
+            value={manualModGood}
+            onChange={(e) => setManualModGood(e.target.value)}
+            placeholder="0"
+          />
+        </div>
+        <div>
+          <label className="block text-xs text-text-dim uppercase tracking-wider mb-1">
+            Extra HP Mod (+/-)
+          </label>
+          <input
+            type="number"
+            className="input-field w-full text-center"
+            value={manualModBad}
+            onChange={(e) => setManualModBad(e.target.value)}
+            placeholder="0"
+          />
+        </div>
       </div>
 
       <button
