@@ -4,6 +4,8 @@ import { isValidRoll, dieLabel } from '../diceUtils';
 function mulliganEffectSummary(m) {
   const parts = [];
   if (m.noDamage) parts.push('No damage');
+  if (m.doubleDamage) parts.push('Double damage');
+  if (m.drainPercent) parts.push(`Drain ${m.drainPercent}%`);
   if (m.hpModGood) parts.push(`Allies ${m.hpModGood > 0 ? '+' : ''}${m.hpModGood} HP`);
   if (m.hpModBad) parts.push(`Enemies ${m.hpModBad > 0 ? '+' : ''}${m.hpModBad} HP`);
   if (m.rollBonusGood) parts.push(`Allies roll ${m.rollBonusGood > 0 ? '+' : ''}${m.rollBonusGood}`);

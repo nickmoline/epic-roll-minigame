@@ -1,4 +1,4 @@
-import { resolveRound, shouldDecreaseDie } from './diceUtils';
+import { shouldDecreaseDie } from './diceUtils';
 
 export function getDefaultConfig() {
   return {
@@ -86,12 +86,42 @@ export function combatReducer(state, action) {
         + (goodMull?.rollBonusBad || 0)
         + (badMull?.rollBonusBad || 0);
 
-      let { hpChangeGood, hpChangeBad, isTie } = resolveRound({
-        rollGood: effectiveRollGood,
-        rollBad: effectiveRollBad,
-        modGood: 0,
-        modBad: 0,
-      });
+      let finalDmgGood = 0; // damage dealt by good guys to bad guys
+      let finalDmgBad = 0;  // damage dealt by bad guys to good guys
+      let healGood = 0;
+      let healBad = 0;
+
+      const baseDiff = effectiveRollGood - effectiveRollBad;
+      const isTie = baseDiff === 0;
+
+      if (baseDiff > 0) {
+        let dmg = baseDiff;
+        if (goodMull?.doubleDamage) {
+          dmg = dmg * 2;
+        }
+        if (goodMull?.drainPercent) {
+          const P = goodMull.drainPercent;
+          healGood = Math.floor(dmg * (P / 100));
+          finalDmgGood = dmg - healGood;
+        } else {
+          finalDmgGood = dmg;
+        }
+      } else if (baseDiff < 0) {
+        let dmg = Math.abs(baseDiff);
+        if (badMull?.doubleDamage) {
+          dmg = dmg * 2;
+        }
+        if (badMull?.drainPercent) {
+          const P = badMull.drainPercent;
+          healBad = Math.floor(dmg * (P / 100));
+          finalDmgBad = dmg - healBad;
+        } else {
+          finalDmgBad = dmg;
+        }
+      }
+
+      let hpChangeGood = healGood - finalDmgBad;
+      let hpChangeBad = healBad - finalDmgGood;
 
       if (goodMull?.noDamage && hpChangeGood < 0) {
         hpChangeGood = 0;
@@ -120,11 +150,25 @@ export function combatReducer(state, action) {
         autoNotes.push(`${config.badGuys.name} mod: ${manualModBad > 0 ? '+' : ''}${manualModBad}`);
       }
 
-      const diff = effectiveRollGood - effectiveRollBad;
-      if (diff > 0) {
-        autoNotes.push(`${config.goodGuys.name} win by ${diff}`);
-      } else if (diff < 0) {
-        autoNotes.push(`${config.badGuys.name} win by ${Math.abs(diff)}`);
+      if (baseDiff > 0) {
+        let msg = `${config.goodGuys.name} win by ${baseDiff}`;
+        if (goodMull?.doubleDamage) {
+          msg += ` (Double Damage: ${baseDiff * 2})`;
+        }
+        if (goodMull?.drainPercent) {
+          msg += ` | Drain ${goodMull.drainPercent}%: heal ${healGood} / deal ${finalDmgGood}`;
+        }
+        autoNotes.push(msg);
+      } else if (baseDiff < 0) {
+        const absDiff = Math.abs(baseDiff);
+        let msg = `${config.badGuys.name} win by ${absDiff}`;
+        if (badMull?.doubleDamage) {
+          msg += ` (Double Damage: ${absDiff * 2})`;
+        }
+        if (badMull?.drainPercent) {
+          msg += ` | Drain ${badMull.drainPercent}%: heal ${healBad} / deal ${finalDmgBad}`;
+        }
+        autoNotes.push(msg);
       }
 
       // Tie event

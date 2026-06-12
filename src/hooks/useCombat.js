@@ -8,6 +8,8 @@ function migrateMulligan(m) {
   return {
     name: m.name || '',
     noDamage: m.noDamage || false,
+    doubleDamage: m.doubleDamage || false,
+    drainPercent: m.drainPercent || 0,
     hpModGood: m.hpModGood || 0,
     hpModBad: m.hpModBad || 0,
     rollBonusGood: m.rollBonusGood || m.rollBonus || 0,

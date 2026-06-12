@@ -31,6 +31,25 @@ function AdvInline({ value, onChange }) {
 }
 
 function MulliganRow({ mulligan, onChange, onRemove, goodLabel, badLabel }) {
+  let selectValue = 'none';
+  if (mulligan.noDamage) {
+    selectValue = 'noDamage';
+  } else if (mulligan.doubleDamage) {
+    selectValue = 'doubleDamage';
+  } else if (mulligan.drainPercent) {
+    selectValue = `drain-${mulligan.drainPercent}`;
+  }
+
+  const handleSpecialEffectChange = (val) => {
+    const updated = {
+      ...mulligan,
+      noDamage: val === 'noDamage',
+      doubleDamage: val === 'doubleDamage',
+      drainPercent: val.startsWith('drain-') ? Number(val.split('-')[1]) : 0,
+    };
+    onChange(updated);
+  };
+
   return (
     <div className="p-2 bg-bg-dark/50 rounded space-y-2">
       <div className="flex items-center gap-2">
@@ -41,15 +60,6 @@ function MulliganRow({ mulligan, onChange, onRemove, goodLabel, badLabel }) {
           onChange={(e) => onChange({ ...mulligan, name: e.target.value })}
           placeholder="Name"
         />
-        <label className="flex items-center gap-1.5 cursor-pointer shrink-0">
-          <input
-            type="checkbox"
-            checked={mulligan.noDamage || false}
-            onChange={(e) => onChange({ ...mulligan, noDamage: e.target.checked })}
-            className="accent-gold w-3.5 h-3.5"
-          />
-          <span className="text-xs font-bold text-yellow-400">No Dmg</span>
-        </label>
         <button
           onClick={onRemove}
           className="text-bad-bright hover:text-bad-light transition-colors px-1 text-lg leading-none shrink-0"
@@ -78,6 +88,21 @@ function MulliganRow({ mulligan, onChange, onRemove, goodLabel, badLabel }) {
         <span className="text-text-dim">Advantage</span>
         <AdvInline value={mulligan.advGood} onChange={(v) => onChange({ ...mulligan, advGood: v })} />
         <AdvInline value={mulligan.advBad} onChange={(v) => onChange({ ...mulligan, advBad: v })} />
+      </div>
+      <div className="flex items-center justify-between pt-2 border-t border-border/20 text-xs">
+        <span className="text-text-dim font-bold">Special Effect</span>
+        <select
+          className="input-field text-xs !py-0.5 !px-1.5 pr-6 min-w-44"
+          value={selectValue}
+          onChange={(e) => handleSpecialEffectChange(e.target.value)}
+        >
+          <option value="none">--</option>
+          <option value="noDamage">No Damage</option>
+          <option value="doubleDamage">Double Damage</option>
+          <option value="drain-25">Drain 25%</option>
+          <option value="drain-50">Drain 50%</option>
+          <option value="drain-100">Drain 100%</option>
+        </select>
       </div>
     </div>
   );
@@ -121,7 +146,7 @@ function GroupConfig({ group, onChange, label, accentClass, goodLabel, badLabel 
               className="text-xs text-gold hover:text-gold-bright transition-colors"
               onClick={() => onChange({
                 ...group,
-                mulligans: [...group.mulligans, { name: '', noDamage: false, hpModGood: 0, hpModBad: 0, rollBonusGood: 0, rollBonusBad: 0, swapDieGood: 0, swapDieBad: 0, advGood: 'normal', advBad: 'normal' }],
+                mulligans: [...group.mulligans, { name: '', noDamage: false, doubleDamage: false, drainPercent: 0, hpModGood: 0, hpModBad: 0, rollBonusGood: 0, rollBonusBad: 0, swapDieGood: 0, swapDieBad: 0, advGood: 'normal', advBad: 'normal' }],
               })}
             >
               + Add
